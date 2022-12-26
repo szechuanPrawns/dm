@@ -15,24 +15,29 @@ public class TestSequentialZnode {
 
     @SneakyThrows
     @Test
+    /**
+     * 上限：/head/child0002798363
+     * KeeperErrorCode = ConnectionLoss for /
+     */
     public void testOverflow(){
         int sleepMsBetweenRetries = 100;
         int maxRetries = 3;
         RetryPolicy retryPolicy = new RetryNTimes(
                 maxRetries, sleepMsBetweenRetries);
 
-        CuratorFramework client = CuratorFrameworkFactory.newClient(
-                "127.0.0.1:2181", retryPolicy
-        );
 
-        client.start();
-
-        assertThat(client.checkExists().forPath("/")).isNotNull();
 
         Runnable createNode = ()->{
+            CuratorFramework client = CuratorFrameworkFactory.newClient(
+                    "127.0.0.1:2181", retryPolicy
+            );
+
+            client.start();
+
             for (long i = 0L; i < 1000000000L; i++) {
                 String node = null;
                 try {
+//                    assertThat(client.checkExists().forPath("/")).isNotNull();
                     node = client.create().creatingParentsIfNeeded().withMode(CreateMode.EPHEMERAL_SEQUENTIAL).forPath("/head/child", new byte[0]);
                 } catch (Exception e) {
                     throw new RuntimeException(e);
